@@ -1,0 +1,25 @@
+{
+  "_note": "Cached model output. In production these come from an LLM API call; the rules never depend on them.",
+  "model": "cached demo output",
+  "reports": {
+    "9100001": {
+      "translation": "Climbed the north-west face below the ridge. Around 2,400 m, cracks shot out from under our skis and there was a clear 'whumpf' as we crossed. Heavy build-up of wind-blown snow below the ridge. We turned back at about 2,500 m.",
+      "signals": ["shooting cracks", "whumpf", "wind slab"],
+      "elevation_m": 2400
+    },
+    "9100002": {
+      "translation": "Good conditions up to 2,000 m, powder in the open forest. Wind-packed higher up, no warning signs noticed.",
+      "signals": [],
+      "elevation_m": 2000
+    },
+    "9100003": {
+      "translation": "Hard, crusty snow on the ridge. Saw a small natural release on the north face.",
+      "signals": ["natural avalanche"],
+      "elevation_m": 2480
+    }
+  },
+  "plan": {
+    "input": "Tomorrow at 8 with Nikos. I'm wearing a red jacket, back at the car by 2.",
+    "parsed": { "depart": "08:00", "return": "14:00", "party": ["Nikos"], "clothing": "red jacket", "date": "tomorrow" }
+  }
+}

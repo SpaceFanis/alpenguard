@@ -1,0 +1,74 @@
+[
+ {
+  "file": "public/photos/cormet-de-roselend-depuis-bisanne-en-hiver.jpg",
+  "media": "image",
+  "ref": "commons:144609400",
+  "title": "Cormet de Roselend depuis Bisanne en hiver (janvier 2024)",
+  "creator": "Florian P\u00e9pellin",
+  "creatorUrl": null,
+  "date": "2024-01-20",
+  "license": "CC BY-SA 4.0",
+  "licenseCode": "by-sa",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "creditRequired": true,
+  "page": "https://commons.wikimedia.org/wiki/File:Cormet_de_Roselend_depuis_Bisanne_en_hiver_(janvier_2024).JPG",
+  "via": "Wikimedia Commons",
+  "image": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Cormet_de_Roselend_depuis_Bisanne_en_hiver_%28janvier_2024%29.JPG",
+  "width": 3264,
+  "height": 2448,
+  "bytes": 5274523,
+  "credit": "\"Cormet de Roselend depuis Bisanne en hiver (janvier 2024)\" by Florian P\u00e9pellin, CC BY-SA 4.0, via Wikimedia Commons",
+  "notes": [
+   "Share-alike: an altered version (recoloured, combined with other pictures) must be shared under the same licence."
+  ],
+  "saved": "2026-11-11T16:52:54.675Z"
+ },
+ {
+  "file": "public/photos/a-mountaineer-skis-down-mt-francais-during.jpg",
+  "media": "image",
+  "ref": "commons:78322524",
+  "title": "A mountaineer skis down Mt Francais during the first traverse of the mountain",
+  "creator": "Dryococelus",
+  "creatorUrl": null,
+  "date": "2019-02-25",
+  "license": "CC BY-SA 4.0",
+  "licenseCode": "by-sa",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "creditRequired": true,
+  "page": "https://commons.wikimedia.org/wiki/File:A_mountaineer_skis_down_Mt_Francais_during_the_first_traverse_of_the_mountain.jpg",
+  "via": "Wikimedia Commons",
+  "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b8/A_mountaineer_skis_down_Mt_Francais_during_the_first_traverse_of_the_mountain.jpg/1920px-A_mountaineer_skis_down_Mt_Francais_during_the_first_traverse_of_the_mountain.jpg",
+  "width": 1920,
+  "height": 1280,
+  "bytes": 482025,
+  "credit": "\"A mountaineer skis down Mt Francais during the first traverse of the mountain\" by Dryococelus, CC BY-SA 4.0, via Wikimedia Commons",
+  "notes": [
+   "Share-alike: an altered version (recoloured, combined with other pictures) must be shared under the same licence."
+  ],
+  "saved": "2026-11-11T15:40:38.524Z"
+ },
+ {
+  "file": "../../../../../private/tmp/claude-501/-Users-pfanis--claude-spares-spare-9aVeCm/5b73b184-e9f8-49fd-bf27-f84379853286/scratchpad/cand/ski-runs-in-the-high-alps-1913.jpg",
+  "media": "image",
+  "ref": "commons:43391239",
+  "title": "Ski-runs in the high Alps (1913) (14591708228)",
+  "creator": "Roget, Fran\u00e7ois Fr\u00e9d\u00e9ric, 1859-",
+  "creatorUrl": null,
+  "date": "1913",
+  "license": "no known copyright restrictions",
+  "licenseCode": "pd",
+  "licenseUrl": "https://www.flickr.com/commons/usage/",
+  "creditRequired": false,
+  "page": "https://commons.wikimedia.org/wiki/File:Ski-runs_in_the_high_Alps_(1913)_(14591708228).jpg",
+  "via": "Wikimedia Commons",
+  "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/Ski-runs_in_the_high_Alps_%281913%29_%2814591708228%29.jpg/1920px-Ski-runs_in_the_high_Alps_%281913%29_%2814591708228%29.jpg",
+  "width": 1920,
+  "height": 1540,
+  "bytes": 1011182,
+  "credit": "\"Ski-runs in the high Alps (1913) (14591708228)\" by Roget, Fran\u00e7ois Fr\u00e9d\u00e9ric, 1859-, no known copyright restrictions, via Wikimedia Commons",
+  "notes": [
+   "Not a formal licence: the archive that published it states it knows of no copyright restrictions."
+  ],
+  "saved": "2026-11-11T18:25:35.173Z"
+ }
+]

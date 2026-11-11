@@ -1,0 +1,41 @@
+{
+  "_note": "Test data shaped like Camptocamp API outings. Texts are written for this demo.",
+  "documents": [
+    {
+      "document_id": 9100001,
+      "lang": "fr",
+      "author": "Claire M.",
+      "created": "2026-02-20T03:00:00+01:00",
+      "date_start": "2026-02-19",
+      "elevation_max": 2520,
+      "condition_rating": "poor",
+      "point": [6.53305, 45.63215],
+      "title": "Versant nord-ouest, demi-tour à 2500 m",
+      "conditions": "Montée par le versant nord-ouest sous la crête. Vers 2400 m, des fissures partent sous les skis et un « whoumpf » bien net en traversant. Grosse accumulation de neige ventée sous la crête. On a fait demi-tour vers 2500 m."
+    },
+    {
+      "document_id": 9100002,
+      "lang": "de",
+      "author": "Jonas K.",
+      "created": "2026-02-19T15:00:00+01:00",
+      "date_start": "2026-02-19",
+      "elevation_max": 2100,
+      "condition_rating": "good",
+      "point": [6.5222, 45.6482],
+      "title": "Schöner Pulver im Wald",
+      "conditions": "Bis 2000 m gute Bedingungen, Pulverschnee im lichten Wald. Oberhalb windgepresst, keine Alarmzeichen bemerkt."
+    },
+    {
+      "document_id": 9100003,
+      "lang": "it",
+      "author": "Luca B.",
+      "created": "2026-02-17T21:00:00+01:00",
+      "date_start": "2026-02-17",
+      "elevation_max": 2480,
+      "condition_rating": "average",
+      "point": [6.5345, 45.6305],
+      "title": "Cresta ovest, neve dura",
+      "conditions": "Neve dura e crostosa sulla cresta. Piccolo distacco spontaneo visto sul versante nord."
+    }
+  ]
+}

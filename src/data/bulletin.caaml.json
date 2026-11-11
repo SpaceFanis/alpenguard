@@ -1,0 +1,28 @@
+{
+  "_note": "Test data in the EAWS CAAML v6 JSON shape. Not a real bulletin.",
+  "bulletins": [
+    {
+      "bulletinID": "demo-beaufortain-2026-02-21",
+      "lang": "en",
+      "publicationTime": "2026-02-20T16:00:00+01:00",
+      "validTime": { "startTime": "2026-02-20T17:00:00+01:00", "endTime": "2026-02-21T17:00:00+01:00" },
+      "source": { "provider": { "name": "Demo bulletin (test data)" } },
+      "regions": [{ "regionID": "DEMO-BEAUFORTAIN", "name": "Beaufortain" }],
+      "dangerRatings": [
+        { "mainValue": "considerable", "elevation": { "lowerBound": "2200" }, "aspects": ["NW", "N", "NE"], "validTimePeriod": "all_day" },
+        { "mainValue": "moderate", "elevation": { "upperBound": "2200" }, "validTimePeriod": "all_day" }
+      ],
+      "avalancheProblems": [
+        {
+          "problemType": "wind_slab",
+          "elevation": { "lowerBound": "2200" },
+          "aspects": ["NW", "N", "NE"],
+          "validTimePeriod": "all_day",
+          "comment": "Fresh wind slabs below ridges and in gullies after strong south-westerly wind. They can be triggered by a single skier."
+        }
+      ],
+      "highlights": "Considerable danger on shaded slopes above 2,200 m: fresh wind slabs.",
+      "weather": { "comment": "Clear, cold morning. Wind easing from the south-west." }
+    }
+  ]
+}
