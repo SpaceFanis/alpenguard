@@ -145,9 +145,7 @@ p { margin: 0; text-wrap: pretty; }
 .rules { padding-top: var(--gap); row-gap: 56px; }
 
 /* ── Compare ── */
-.compare { padding-top: var(--gap); row-gap: 24px; }
-.compare h2 { grid-column: 1 / span 7; }
-.compare-lead { grid-column: 1 / span 6; font-size: var(--step-body); color: var(--muted); }
+.compare { padding-top: var(--gap); }
 .tools { grid-column: 1 / -1; margin-top: 32px; border-collapse: collapse; font-family: var(--ui); font-size: 1rem; width: 100%; }
 .tools th, .tools td { text-align: left; vertical-align: top; padding: 16px 0; font-weight: 400; border-top: 1px solid var(--ui-line); /* taste-skill-ignore: a real data table */ }
 .tools thead th { font-size: 0.8125rem; color: var(--muted); border-top: 0; padding-bottom: 10px; }
@@ -387,50 +385,71 @@ p { margin: 0; text-wrap: pretty; }
 
 
 /* ── Coverage matrix: marks draw in, column by column ── */
-.matrix { grid-column: 1 / -1; margin-top: 40px; width: 100%; border-collapse: separate; border-spacing: 0 6px; font-family: var(--ui); }
-.matrix thead th { font-size: 0.8125rem; font-weight: 500; color: var(--muted); text-align: center; padding: 0 8px 10px; vertical-align: bottom; width: 13%; }
-.matrix tbody th { text-align: left; font-weight: 400; padding: 18px 20px; background: var(--paper); border-radius: 6px 0 0 6px; width: 48%; }
-.matrix tbody th b { display: block; font-weight: 600; font-size: 1.0625rem; }
-.matrix tbody th span { display: block; font-size: 0.875rem; color: var(--muted); margin-top: 2px; }
-.matrix td { text-align: center; background: var(--paper); padding: 0 8px; }
-.matrix td:last-child { border-radius: 0 6px 6px 0; }
-.matrix .is-us th, .matrix .is-us td { background: var(--ink); color: #fff; }
+/* ── Good tools, each one part: one coverage strip per tool ──
+   Four segments per tool, in the same order as the column labels: solid where the tool covers that part,
+   hatched where it covers it in part, an empty slot where it doesn't. Read down, every strip has gaps;
+   AlpenGuard's is the only full one. */
+.compare { align-items: start; row-gap: 40px; }
+.compare-head { grid-column: 1 / span 4; display: grid; gap: 20px; align-content: start; }
+.compare h2 { font-size: clamp(2.5rem, 1.5rem + 2.6vw, 4rem); }
+.compare-lead { font-size: var(--step-body); color: var(--muted); max-width: 30ch; }
+.cov-key { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; font-family: var(--ui); font-size: 0.8125rem; color: var(--muted); }
+.cov-key li { display: flex; align-items: center; gap: 8px; }
+.cov-key .seg { width: 22px; height: 12px; transform: none; }
+
+.matrix { grid-column: 6 / -1; width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0; font-family: var(--ui); margin-top: 6px; }
+.matrix thead th { text-align: left; vertical-align: bottom; font-size: 0.8125rem; font-weight: 500; line-height: 1.25; color: var(--muted); padding: 0 4px 10px 0; border-bottom: 1.5px solid var(--ink); }
+.matrix thead th:first-child { width: 40%; }
+.matrix .col-short { display: none; }
+.matrix tbody th { text-align: left; font-weight: 400; padding: 13px 20px 13px 0; border-bottom: 1px solid rgba(11, 23, 34, 0.1); }
+.matrix tbody th b { display: block; font-weight: 600; font-size: 0.9375rem; }
+.matrix tbody th span { display: block; font-size: 0.8125rem; line-height: 1.35; color: var(--muted); margin-top: 1px; }
+.matrix td { padding: 13px 4px 13px 0; border-bottom: 1px solid rgba(11, 23, 34, 0.1); vertical-align: middle; }
+.matrix .is-us th, .matrix .is-us td { background: var(--ink); color: #fff; border-bottom: 0; border-right: 1px solid var(--ink); /* no hairline seams between cells */ }
+.matrix .is-us td:last-child { border-right: 0; }
+.matrix .is-us th { padding-left: 16px; border-radius: 6px 0 0 6px; }
+.matrix .is-us td:last-child { padding-right: 12px; border-radius: 0 6px 6px 0; }
 .matrix .is-us th span { color: #b9c7d3; }
-.mark { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; }
-.mark svg { width: 20px; height: 20px; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
-.mark-yes { background: rgba(31, 111, 139, 0.12); }
-.mark-yes path { stroke: var(--accent); }
-.mark-part path { stroke: var(--muted); }
-.mark-no circle { fill: rgba(11, 23, 34, 0.25); stroke: none; }
-.is-us .mark-yes { background: #ff9900; }
-.is-us .mark-yes path { stroke: var(--ink); }
-.mark path { stroke-dasharray: 24; stroke-dashoffset: 24; transition: stroke-dashoffset 600ms var(--ease) calc(var(--c) * 160ms + var(--r) * 70ms); }
-.mark { transform: scale(0.6); opacity: 0; transition: transform 500ms var(--ease) calc(var(--c) * 160ms + var(--r) * 70ms), opacity 400ms ease calc(var(--c) * 160ms + var(--r) * 70ms); }
-.matrix.is-on .mark { transform: none; opacity: 1; }
-.matrix.is-on .mark path { stroke-dashoffset: 0; }
-.matrix .is-us .mark { transition-delay: calc(var(--c) * 180ms + 900ms); }
-.matrix .is-us .mark path { transition-delay: calc(var(--c) * 180ms + 1000ms); }
+.matrix tr:nth-last-child(2) th, .matrix tr:nth-last-child(2) td { border-bottom: 0; padding-bottom: 20px; }
+
+.seg { display: block; box-sizing: border-box; height: 26px; border-radius: 3px; border: 1px solid transparent; transform-origin: left center; }
+.seg-yes { background: var(--accent); }
+.seg-part { background: repeating-linear-gradient(135deg, var(--accent) 0 2px, transparent 2px 6px); border-color: var(--accent); /* taste-skill-ignore: the hatch is data, it means "covers it in part" */ }
+.seg-no { border-color: rgba(11, 23, 34, 0.18); }
+.is-us .seg-yes { background: #ff9900; }
+
+/* The strips fill left to right, row by row, when the board comes into view; AlpenGuard's last. */
+.matrix .seg { transform: scaleX(0); transition: transform 520ms var(--ease) calc(var(--r) * 70ms + var(--c) * 90ms); }
+.matrix .is-us .seg { transition-delay: calc(560ms + var(--c) * 110ms); }
+.matrix.is-on .seg { transform: none; }
+@media (prefers-reduced-motion: reduce) { .matrix .seg { transform: none; transition: none; } }
 
 @media (max-width: 1080px) {
+  .compare-head { grid-column: 1 / -1; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 32px; align-items: end; }
+  .compare-head h2 { grid-row: span 2; }
+  .matrix { grid-column: 1 / -1; }
 }
 @media (max-width: 700px) {
-  .matrix thead { display: none; }
-  .matrix, .matrix tbody, .matrix tr { display: block; }
-  .matrix tr { background: var(--paper); border-radius: 6px; padding: 14px 16px; margin-bottom: 8px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 0; }
-  .matrix .is-us { background: var(--ink); }
-  .matrix tbody th { grid-column: 1 / -1; width: auto; padding: 0; background: none; }
-  .matrix td { display: grid; justify-items: center; gap: 4px; padding: 0; background: none; font-size: 0.6875rem; color: var(--muted); }
-  .matrix td::after { content: attr(data-label); text-align: center; }
-  .matrix .is-us td { color: #b9c7d3; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .mark { transform: none; opacity: 1; transition: none; }
-  .mark path { stroke-dashoffset: 0; transition: none; }
-}
-@media (max-width: 700px) {
-  .matrix tr { background: none; border-radius: 0; padding: 18px 0; margin: 0; }
-  .matrix tr + tr { padding-top: 20px; }
-  .matrix .is-us { background: var(--ink); border-radius: 6px; padding: 18px 16px; margin-top: 12px; }
+  .compare { row-gap: 28px; }
+  .compare-head { grid-template-columns: 1fr; gap: 16px; }
+  .compare-head h2 { grid-row: auto; }
+  .matrix, .matrix thead, .matrix tbody { display: block; }
+  /* One label row on top, then each tool: name and note, its strip right under. */
+  .matrix thead tr, .matrix tbody tr { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 4px; }
+  .matrix thead th:first-child { display: none; }
+  .matrix thead th { padding: 0 0 8px; border-bottom-width: 1px; font-size: 0.8125rem; width: auto; }
+  .matrix .col-long { display: none; }
+  .matrix .col-short { display: inline; }
+  .matrix tbody tr { padding: 12px 0 14px; border-bottom: 1px solid rgba(11, 23, 34, 0.1); row-gap: 8px; }
+  .matrix tbody th { grid-column: 1 / -1; padding: 0; border: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+  .matrix tbody th b { display: inline; }
+  .matrix tbody th span { display: inline; margin: 0; }
+  .matrix td { padding: 0; border: 0; }
+  .matrix .seg { height: 20px; }
+  .matrix tr:nth-last-child(2) { border-bottom: 0; }
+  .matrix tr:nth-last-child(2) th, .matrix tr:nth-last-child(2) td { padding-bottom: 0; }
+  .matrix .is-us { background: var(--ink); border-radius: 6px; padding: 12px 12px 14px; border: 0; margin-top: 4px; }
+  .matrix .is-us th, .matrix .is-us td { background: none; padding: 0; border-radius: 0; }
 }
 
 /* ── Three apps, three languages: the report translates itself ── */
@@ -442,11 +461,10 @@ p { margin: 0; text-wrap: pretty; }
 }
 
 @media (max-width: 1080px) {
-  .compare h2, .waits h2 { grid-column: 1 / -1; }
-  .compare-lead { grid-column: 1 / span 9; }
+  .waits h2 { grid-column: 1 / -1; }
 }
 @media (max-width: 700px) {
-  .compare-lead, .waits-inner > p { grid-column: 1 / -1; }
+  .waits-inner > p { grid-column: 1 / -1; }
 }
 
 /* ── Rules: a ski-touring photograph under the rule ── */
@@ -679,3 +697,21 @@ p { margin: 0; text-wrap: pretty; }
 .demo .find-also { font-size: 1rem; line-height: 1.5; max-width: 52ch; }
 @media (max-width: 700px) { .ledger > div { grid-template-columns: 1fr; gap: 2px; } }
 .mk-dot-end { background: #fff; box-shadow: 0 0 0 2px var(--ink); /* taste-skill-ignore: map marker ring */ }
+
+/* ── Rules on phones: text and picture alternate instead of stacking ──
+   Headline and main line, then the 1913 map with the three rings, then the rule and the sample tour's
+   numbers as a compact 2×2 grid. On wider screens the text column and the map stay side by side. */
+.facts { grid-template-columns: repeat(4, auto); gap: 8px 32px; }
+.facts span { max-width: none; white-space: nowrap; }
+@media (max-width: 1080px) { .facts { grid-template-columns: repeat(4, auto); } }
+@media (max-width: 700px) {
+  .rules { row-gap: 24px; }
+  .rules-text { display: contents; }
+  .rules h2 { grid-column: 1 / -1; order: 1; }
+  .rules .lead { grid-column: 1 / -1; order: 2; max-width: none; }
+  .rulemap { grid-column: 1 / -1; order: 3; margin: 8px 0 4px; }
+  .rules-note { grid-column: 1 / -1; order: 4; font-size: 1.0625rem; }
+  .facts { grid-column: 1 / -1; order: 5; grid-template-columns: 1fr 1fr; gap: 20px 16px; margin: 8px 0 0; }
+  .facts li { gap: 2px; }
+  .facts b { font-size: 1.375rem; }
+}

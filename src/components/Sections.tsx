@@ -81,9 +81,10 @@ export function Rules() {
         <p className="lead">A language model reads the French report and your spoken plan. It never decides about a slope: plain rules make every call.</p>
         <p className="rules-note">A stretch is flagged only when all three hold. Reports within {RULES.reportRadius} m and under {RULES.reportMaxAge} h are attached to it; older or farther ones are listed with the reason they were set aside.</p>
         <ul className="facts" aria-label="The sample tour in numbers">
-          <li><b>{fmt(TOP)} m</b><span>summit of the sample tour, Beaufortain</span></li>
-          <li><b>{km(LEN)} km · ↑ {fmt(GAIN)} m</b><span>of route and climb</span></li>
-          <li><b><LocalTime /></b><span>now, in the Alps</span></li>
+          <li><b>{fmt(TOP)} m</b><span>Summit, Beaufortain</span></li>
+          <li><b>{km(LEN)} km</b><span>Route</span></li>
+          <li><b>↑ {fmt(GAIN)} m</b><span>Climb</span></li>
+          <li><b><LocalTime /></b><span>Now, in the Alps</span></li>
         </ul>
       </div>
       <RuleMap />
@@ -104,29 +105,32 @@ const TOOLS: [string, Cov[], string][] = [
   ['AlpenGuard', ['yes', 'yes', 'yes', 'yes'], 'Reports translated and pinned to the route; alert with a rescue dossier'],
 ];
 const COV_LABEL: Record<Cov, string> = { yes: 'Yes', part: 'In part', no: 'Not found' };
-function Mark({ v }: { v: Cov }) {
-  return (
-    <span className={`mark mark-${v}`} title={COV_LABEL[v]}>
-      <svg viewBox="0 0 24 24" aria-hidden="true">{v === 'yes' ? <path d="M5 12.5l4.5 4.5L19 7.5" /> : v === 'part' ? <path d="M6 12h12" /> : <circle cx="12" cy="12" r="2.5" />}</svg>
-      <span className="sr-only">{COV_LABEL[v]}</span>
-    </span>
-  );
+/** One segment of a tool's coverage strip: solid where it covers the part, hatched in part, empty where not. */
+function Seg({ v }: { v: Cov }) {
+  return <span className={`seg seg-${v}`} title={COV_LABEL[v]}><span className="sr-only">{COV_LABEL[v]}</span></span>;
 }
 
 export function Compare() {
   const [ref, on] = useInView<HTMLTableElement>(0.3);
   return (
     <section className="compare" id="compare" aria-labelledby="compare-h">
-      <h2 id="compare-h">Good tools, each one part</h2>
-      <p className="compare-lead reveal">Many are free and excellent. AlpenGuard doesn't replace them; it joins the parts into one flow.</p>
+      <div className="compare-head">
+        <h2 id="compare-h">Good tools, each one part</h2>
+        <p className="compare-lead reveal">Many are free and excellent. AlpenGuard doesn't replace them; it joins the parts into one flow.</p>
+        <ul className="cov-key reveal" aria-hidden="true">
+          <li><Seg v="yes" />Covers it</li>
+          <li><Seg v="part" />In part</li>
+          <li><Seg v="no" />Not found</li>
+        </ul>
+      </div>
       <table className={`matrix${on ? ' is-on' : ''}`} ref={ref}>
         <caption className="sr-only">What each tool covers, from the AlpenGuard project document</caption>
-        <thead><tr><th scope="col"><span className="sr-only">Tool</span></th>{COLS.map((c) => <th scope="col" key={c}>{c}</th>)}</tr></thead>
+        <thead><tr><th scope="col"><span className="sr-only">Tool</span></th>{COLS.map((c, i) => <th scope="col" key={c}><span className="col-long">{c}</span><span className="col-short" aria-hidden="true">{SHORT[i]}</span></th>)}</tr></thead>
         <tbody>
           {TOOLS.map(([n, cov, note], r) => (
             <tr key={n} className={n === 'AlpenGuard' ? 'is-us' : ''} style={{ ['--r' as string]: r }}>
               <th scope="row"><b>{n}</b><span>{note}</span></th>
-              {cov.map((v, c) => <td key={c} data-label={SHORT[c]} style={{ ['--c' as string]: c }}><Mark v={v} /></td>)}
+              {cov.map((v, c) => <td key={c} style={{ ['--c' as string]: c }}><Seg v={v} /></td>)}
             </tr>
           ))}
         </tbody>

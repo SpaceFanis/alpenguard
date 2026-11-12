@@ -48,6 +48,16 @@ export function useMotion() {
     const BELOW: Landing[] = [['#rules', 24, 'fit'], ['#compare', 24, 'fit', '.matrix'], ['#limits', 96, 'start'], ['.footer', 0, 'start']];
     const landing = ([sel, room, mode, endSel]: Landing, vh: number) => {
       const el = document.querySelector<HTMLElement>(sel); if (!el) return null;
+      if (sel === '#problem') {
+        // The heading and the three printouts, centred in the screen where they fit; on a short screen the
+        // page goes lower so the printouts aren't cut, as long as the heading stays in view. Never higher
+        // than the chapter's top edge (that would show the bright mountain above the dark chapter).
+        const h = el.querySelector('h2'), desk = el.querySelector('.desk');
+        if (h && desk) {
+          const a = top(h), z = bottom(desk);
+          return Math.min(a - 32, Math.max(top(el), (a + z) / 2 - vh / 2 + 16, z + 40 - vh));
+        }
+      }
       const startY = top(el) - room, endY = bottom((endSel && el.querySelector(endSel)) || el) + room - vh;
       return mode === 'start' ? startY : mode === 'end' ? endY : (endY + vh - startY <= vh ? startY : endY);
     };
@@ -153,14 +163,25 @@ export function useMotion() {
     const ro = new ResizeObserver(() => placeLandings());
     ro.observe(document.body);
     const demo = document.querySelector('#demo');
-    const demoIo = new IntersectionObserver(([e]) => { if (e.isIntersecting) sectionSnap.stop(); else sectionSnap.start(); }, { threshold: 0.12 });
+    // The soft landings pause inside the sample tour and during a link jump (a tap is a tiny touch gesture,
+    // and its landing would otherwise pull the page back to where the tap happened).
+    let inDemo = false, jumping = false;
+    const syncSnap = () => { if (inDemo || jumping) sectionSnap.stop(); else sectionSnap.start(); };
+    const demoIo = new IntersectionObserver(([e]) => { inDemo = e.isIntersecting; syncSnap(); }, { threshold: 0.12 });
     if (demo) demoIo.observe(demo);
 
     const onClick = (e: MouseEvent) => {
       const a = (e.target as HTMLElement).closest('a[href^="#"]') as HTMLAnchorElement | null;
       if (!a) return;
       const target = document.querySelector(a.getAttribute('href')!);
-      if (target) { e.preventDefault(); lenis.scrollTo(target as HTMLElement, { duration: 1.4, easing: easeInOut }); }
+      if (!target) return;
+      e.preventDefault();
+      jumping = scrollState.stepping = true; syncSnap(); // the map also waits for the jump to land
+      const land = () => { jumping = scrollState.stepping = false; window.setTimeout(syncSnap, 120); };
+      // A pixel target, measured now: Lenis can resolve an element against a stale position after an earlier jump.
+      const y = Math.min(lenis.limit, Math.max(0, Math.round(top(target))));
+      lenis.scrollTo(y, { duration: 1.4, easing: easeInOut, lock: true, force: true, onComplete: land });
+      window.setTimeout(() => { if (jumping) land(); }, 2200); // never leave the landings off
     };
     document.addEventListener('click', onClick);
     return () => { window.clearInterval(quiet); window.removeEventListener('keydown', onKey); io.disconnect(); ro.disconnect(); demoIo.disconnect(); cancelAnimationFrame(raf); sectionSnap.destroy(); window.clearTimeout(safety); lenis.destroy(); document.removeEventListener('click', onClick); };
