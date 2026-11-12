@@ -7,6 +7,7 @@ import mlcontour from 'maplibre-contour';
 import { registerSlopeProtocol, SLOPE_BANDS, TERRARIUM } from '../lib/slope-protocol';
 import type { Evaluation, Report } from '../lib/rules';
 import { routePoints, type RoutePoint } from '../lib/route-points';
+import { scrollState } from '../lib/motion';
 
 export interface RiskMapHandle { focusFlag: (id: string) => void; overview: () => void; resize: () => void }
 interface Props {
@@ -69,7 +70,7 @@ function style(): maplibregl.StyleSpecification {
     layers: [
       { id: 'bg', type: 'background', paint: { 'background-color': '#eef2f5' } },
       { id: 'imagery', type: 'raster', source: 'imagery', layout: { visibility: 'none' }, paint: { 'raster-saturation': -0.2, 'raster-brightness-min': 0.05 } },
-      { id: 'shade', type: 'hillshade', source: 'shade', paint: { 'hillshade-shadow-color': '#4f6478', 'hillshade-highlight-color': '#ffffff', 'hillshade-accent-color': '#8fa3b5', 'hillshade-exaggeration': 0.7, 'hillshade-illumination-direction': 315 } },
+      { id: 'shade', type: 'hillshade', source: 'shade', paint: { 'hillshade-method': 'igor', 'hillshade-shadow-color': '#4f6478', 'hillshade-highlight-color': '#ffffff', 'hillshade-accent-color': '#8fa3b5', 'hillshade-exaggeration': 0.7, 'hillshade-illumination-direction': 315 } },
       { id: 'contour-minor', type: 'line', source: 'contours', 'source-layer': 'contours', filter: ['==', ['get', 'level'], 0], paint: { 'line-color': '#2f4a63', 'line-opacity': 0.16, 'line-width': 0.6 } },
       { id: 'contour-major', type: 'line', source: 'contours', 'source-layer': 'contours', filter: ['>', ['get', 'level'], 0], paint: { 'line-color': '#2f4a63', 'line-opacity': 0.32, 'line-width': 1 } },
       { id: 'slope', type: 'raster', source: 'slope', paint: { 'raster-opacity': 0.42, 'raster-resampling': 'linear' } },
@@ -95,6 +96,8 @@ export const RiskMap = forwardRef<RiskMapHandle, Props>(function RiskMap(
   const markers = useRef<maplibregl.Marker[]>([]);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [painted, setPainted] = useState(false); // first complete frame drawn: fade the map in
+  const [settling, setSettling] = useState(true); // markers wait until the terrain under them has loaded
   const orbitRef = useRef(orbit);
   orbitRef.current = orbit;
   const selectRef = useRef(onSelectFlag);
@@ -117,9 +120,17 @@ export const RiskMap = forwardRef<RiskMapHandle, Props>(function RiskMap(
   const [near, setNear] = useState(false);
   useEffect(() => {
     if (!box.current) return;
-    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setNear(true); io.disconnect(); } }, { rootMargin: '900px 0px' });
+    // Building the map is heavy (shaders, terrain, workers). Never start it in the middle of a scroll step:
+    // wait until the page is still and the browser has a free moment.
+    let timer = 0, idle = 0;
+    const start = () => {
+      if (scrollState.stepping) { timer = window.setTimeout(start, 180); return; }
+      const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o: { timeout: number }) => number }).requestIdleCallback;
+      if (ric) idle = ric(() => setNear(true), { timeout: 600 }); else timer = window.setTimeout(() => setNear(true), 60);
+    };
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { io.disconnect(); start(); } }, { rootMargin: window.innerWidth < 700 ? '900px 0px' : '200% 0px' }); // phones: later, so the build never lands on a swipe
     io.observe(box.current);
-    return () => io.disconnect();
+    return () => { io.disconnect(); clearTimeout(timer); (window as unknown as { cancelIdleCallback?: (n: number) => void }).cancelIdleCallback?.(idle); };
   }, []);
   useEffect(() => {
     if (!box.current || !near) return;
@@ -133,16 +144,33 @@ export const RiskMap = forwardRef<RiskMapHandle, Props>(function RiskMap(
     } catch { setFailed(true); return; }
     map.current = m;
     if (import.meta.env.DEV) (window as unknown as { __map: unknown }).__map = m;
+    m.scrollZoom.disable(); // until the map is visible, the wheel scrolls the page
     if (mode === 'demo') m.addControl(new maplibregl.NavigationControl({ visualizePitch: true, showCompass: true }), 'top-right');
     m.on('load', () => {
       m.setTerrain({ source: 'terrain', exaggeration: 1.25 });
       m.getContainer().dataset.ready = '1';
       setReady(true);
+      // Fade in once the first view is complete (or after a few seconds on a slow connection).
+      // Fade in once the ground itself is drawn (terrain and shading); the slope colours and contours can
+      // fill in on top. On a slow connection, show what there is after 2.5 s.
+      let shown = false;
+      const show = () => {
+        if (shown) return; shown = true;
+        setPainted(true); if (mode === 'demo') m.scrollZoom.enable();
+        m.off('render', check); window.setTimeout(() => setSettling(false), 1200); // markers: at the next idle, or soon after
+      };
+      const check = () => { if (m.isSourceLoaded('terrain') && m.isSourceLoaded('shade')) show(); };
+      m.on('render', check); m.once('idle', show); window.setTimeout(show, 2500);
     });
     m.on('error', (e) => { if (String(e.error?.message ?? '').includes('WebGL')) setFailed(true); });
     m.on('click', 'flag-line', (e) => { const id = e.features?.[0]?.properties?.id as string | undefined; if (id) selectRef.current?.(id); });
     // Markers are placed from terrain height; re-seat them once the terrain tiles under them have loaded.
-    m.on('idle', () => markers.current.forEach((k) => k.setLngLat(k.getLngLat())));
+    // Markers sit at the terrain height under them. When sharper terrain tiles arrive, that height changes, so
+    // re-seat them right away (once per frame at most), not only when the whole map goes idle.
+    let reseat = 0;
+    const seat = () => { reseat = 0; markers.current.forEach((k) => k.setLngLat(k.getLngLat())); };
+    m.on('sourcedata', (e) => { if (e.sourceId === 'terrain' && e.tile && !reseat) reseat = requestAnimationFrame(seat); });
+    m.on('idle', () => { seat(); setSettling(false); });
     m.on('mouseenter', 'flag-line', () => { m.getCanvas().style.cursor = 'pointer'; });
     m.on('mouseleave', 'flag-line', () => { m.getCanvas().style.cursor = ''; });
     // Slow orbit on the hero, paused while the visitor handles the map.
@@ -154,7 +182,7 @@ export const RiskMap = forwardRef<RiskMapHandle, Props>(function RiskMap(
     raf = requestAnimationFrame(spin);
     const hold = () => { held = true; };
     m.on('mousedown', hold); m.on('touchstart', hold);
-    return () => { cancelAnimationFrame(raf); m.remove(); map.current = null; setReady(false); };
+    return () => { cancelAnimationFrame(raf); cancelAnimationFrame(reseat); m.remove(); map.current = null; setReady(false); setPainted(false); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [near]);
 
@@ -206,12 +234,12 @@ export const RiskMap = forwardRef<RiskMapHandle, Props>(function RiskMap(
     m.setPaintProperty('shade', 'hillshade-exaggeration', imagery ? 0.25 : 0.75);
   }, [ready, showSlope, imagery, mode]);
 
-  useEffect(() => { if (ready && map.current && !camera) map.current.fitBounds(bounds(route), { padding: 60, pitch: 58, bearing: 125, duration: 0 }); }, [ready, route]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (ready && map.current && !camera) { setSettling(true); map.current.fitBounds(bounds(route), { padding: 60, pitch: 58, bearing: 125, duration: 0 }); } }, [ready, route]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className={`riskmap ${className ?? ''}`} data-ui aria-label={label ?? 'Risk map'} role="region">
+    <div className={`riskmap${painted ? ' is-painted' : ''}${settling ? ' is-settling' : ''} ${className ?? ''}`} data-ui aria-label={label ?? 'Risk map'} role="region">
       <div ref={box} className="riskmap-canvas" />
-      {!ready && !failed && <p className="riskmap-loading" aria-hidden="true">Loading terrain…</p>}
+      {!painted && !failed && <p className="riskmap-loading" aria-hidden="true">Loading terrain…</p>}
       {failed && <p className="riskmap-fallback">The 3D map needs WebGL, which this browser has turned off. The analysis below still works.</p>}
       {showSlope && (
         <div className="slope-legend" aria-label="Slope angle bands">

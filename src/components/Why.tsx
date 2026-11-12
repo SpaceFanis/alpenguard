@@ -156,7 +156,7 @@ function SnowNumber({ value, run }: { value: string; run: boolean }) {
     let raf = 0, alive = true, visible = true;
     type P = { tx: number; ty: number; x0: number; y0: number; r: number; d: number; a: number; teal: boolean };
     let pts: P[] = [], drift: { x: number; y: number; v: number; r: number }[] = [];
-    let W = 0, H = 0, t0 = 0;
+    let W = 0, H = 0, t0 = 0, still: HTMLCanvasElement | null = null, settledAt = Infinity;
 
     const build = async () => {
       await document.fonts.load('300 200px Newsreader').catch(() => {});
@@ -186,6 +186,7 @@ function SnowNumber({ value, run }: { value: string; run: boolean }) {
         pts.push({ tx, ty, x0: tx + (Math.random() - 0.5) * 120, y0: -20 - Math.random() * H * 0.9, r: 0.9 + Math.random() * 1.4,
           d: (1 - ty / H) * 0.9 + Math.random() * 0.5, a: 0.55 + Math.random() * 0.45, teal: Math.random() < 0.12 });
       }
+      still = null; settledAt = pts.reduce((m, p) => Math.max(m, p.d), 0) + 1.45;
       drift = Array.from({ length: 46 }, () => ({ x: Math.random() * W, y: Math.random() * H, v: 8 + Math.random() * 16, r: 0.8 + Math.random() * 1.4 }));
       b.style.setProperty('--glyph-w', `${Math.round(gw * scale)}px`);
     };
@@ -199,7 +200,10 @@ function SnowNumber({ value, run }: { value: string; run: boolean }) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, W, H);
       const el = reduce ? 99 : run ? (t0 ||= t, (t - t0) / 1000) : -1;
-      for (const p of pts) {
+      // Once every dot has landed, the numeral is still: draw it once into a buffer and reuse it, so the
+      // only per-frame work left is the handful of drifting flakes.
+      if (still && el > settledAt) { ctx.globalAlpha = 1; ctx.drawImage(still, 0, 0, W, H); }
+      else for (const p of pts) {
         let k = el < 0 ? 0 : Math.min(1, Math.max(0, (el - p.d) / 1.4));
         k = ease(k);
         if (k <= 0) continue;
@@ -208,6 +212,10 @@ function SnowNumber({ value, run }: { value: string; run: boolean }) {
         ctx.globalAlpha = p.a * Math.min(1, k * 3);
         ctx.fillStyle = p.teal ? '#7cc3dc' : '#eef2f5';
         ctx.beginPath(); ctx.arc(x, y, p.r, 0, 6.283); ctx.fill();
+      }
+      if (!still && el > settledAt) {
+        still = document.createElement('canvas'); still.width = W * dpr; still.height = H * dpr;
+        still.getContext('2d')!.drawImage(c, 0, 0);
       }
       if (!reduce) {
         ctx.fillStyle = '#c9d6e1';

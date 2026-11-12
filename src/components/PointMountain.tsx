@@ -202,9 +202,10 @@ export function PointMountain() {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const narrow = window.innerWidth < 700;
     let renderer: THREE.WebGLRenderer;
-    try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' }); }
+    try { renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: 'high-performance' }) /* soft points need no MSAA */; }
     catch { setFailed(true); return; }
-    const pr = Math.min(window.devicePixelRatio || 1, 2);
+    // Points are soft dots: past 1.5× the extra pixels cost a lot of GPU (Retina laptops, phones) and add nothing visible.
+    const pr = Math.min(window.devicePixelRatio || 1, 1.5);
     renderer.setPixelRatio(pr);
     renderer.setClearColor(0x000000, 0);
     box.appendChild(renderer.domElement);

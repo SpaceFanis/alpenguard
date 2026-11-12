@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local tool output
+.claude/settings.local.json
+.taste-skill/inspect/
